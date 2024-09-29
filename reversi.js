@@ -2,12 +2,30 @@ let isOddTurn = true;
 
 $(function () {
     $(".square").click(clickSquareEvent);
+
+    initializeEvent();
 });
 
 function clickSquareEvent() {
     let square = $(this);
-    putPiece(square, getTurnString())
-    changeTurn()
+
+    if (!canSelect(square)) {
+        return;
+    }
+
+    changeOwner(square);
+}
+
+function initializeEvent() {
+    changeOwner(getTargeSquare(3,3));
+    changeOwner(getTargeSquare(3,4));
+    changeOwner(getTargeSquare(4,4));
+    changeOwner(getTargeSquare(4,3));
+}
+
+function changeOwner(square) {
+    putPiece(square, getTurnString());
+    changeTurn();
 }
 
 function putPiece(targetSquare, owner) {
@@ -23,4 +41,15 @@ function getTurnString() {
 
 function changeTurn() {
     isOddTurn = !isOddTurn;
+}
+
+function getTargeSquare(row, col) {
+    return $("[data-row=" + row + "][data-col=" + col + "]");
+}
+
+function canSelect(square) {
+    if (square.hasClass("selected")) {
+        return false;
+    }
+    return true;
 }
