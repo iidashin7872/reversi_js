@@ -6,7 +6,7 @@ let isOddTurn = true;
 
 $(function () {
     $(".square").click(clickSquareEvent);
-
+    $("#btn-initialize").click(initializeEvent);
     initializeEvent();
 });
 
@@ -21,6 +21,13 @@ function clickSquareEvent() {
 }
 
 function initializeEvent() {
+    $(".square")
+        .removeClass("selcted")
+        .text("")
+        .attr("data-owner", "");
+
+    isOddTurn = true;
+
     changeOwner(getTargetSquare(3,3));
     changeOwner(getTargetSquare(3,4));
     changeOwner(getTargetSquare(4,4));
@@ -46,6 +53,16 @@ function getTurnString() {
 
 function changeTurn() {
     isOddTurn = !isOddTurn;
+
+    for (let elem of $(".square")) {
+        if (canSelect($(elem))) {
+            $(elem).addClass("can-select");
+            $(elem).removeClass("cant-select");
+        } else {
+            $(elem).removeClass("can-select");
+            $(elem).addClass("cant-select");
+        }
+    }
 }
 
 function getTargetSquare(row, col) {
@@ -56,7 +73,35 @@ function canSelect(square) {
     if (square.hasClass("selected")) {
         return false;
     }
-    return true;
+
+    let row = square.data("row");
+    let col = square.data("col");
+    if (getPosOwnerOppositeUpper(row, col) != null) {
+        return true;
+    }
+    if (getPosOwnerOppositeLower(row, col) != null) {
+        return true;
+    }
+    if (getPosOwnerOppositeLeft(row, col) != null) {
+        return true;
+    }
+    if (getPosOwnerOppositeRight(row, col) != null) {
+        return true;
+    }
+    if (getPosOwnerOppositeUpperLeft(row, col) != null) {
+        return true;
+    }
+    if (getPosOwnerOppositeUpperRight(row, col) != null) {
+        return true;
+    }
+    if (getPosOwnerOppositeLowerLeft(row, col) != null) {
+        return true;
+    }
+    if (getPosOwnerOppositeLowerRight(row, col) != null) {
+        return true;
+    }
+
+    return false;
 }
 
 function changeOwnerOpposite(square) {
