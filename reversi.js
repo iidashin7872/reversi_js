@@ -63,7 +63,56 @@ function changeOwnerOpposite(square) {
     let row = square.data("row");
     let col = square.data("col");
 
+    changeOwnerOppositeUpper(row, col);
     changeOwnerOppositeLower(row, col);
+    changeOwnerOppositeLeft(row, col);
+    changeOwnerOppositeRight(row, col);
+    changeOwnerOppositeUpperLeft(row, col);
+    changeOwnerOppositeUpperRight(row, col);
+    changeOwnerOppositeLowerLeft(row, col);
+    changeOwnerOppositeLowerRight(row, col);
+}
+
+function changeOwnerOppositeUpper(row, col) {
+    let endPos = getPosOwnerOppositeUpper(row, col);
+    if (endPos == null) {
+        return;
+    }
+
+    let targetCol = col;
+    for (let targetRow = row - 1; endPos.row < targetRow; targetRow--) {
+        let targetSquare = getTargetSquare(targetRow, targetCol);
+        putPiece(targetSquare, getTurnString());
+    }
+}
+
+function getPosOwnerOppositeUpper(row, col) {
+    if (row == 0) {
+        return null;
+    }
+
+    let targetRow = row - 1;
+    let targetCol = col;
+
+    if (getSquareStatus(targetRow, targetCol) != IS_OTHER) {
+        return null;
+    }
+
+    for (targetRow--; 0 <= targetRow; targetRow--) {
+        let status = getSquareStatus(targetRow, targetCol);
+        
+        if (status == NOT_SELECTED) {
+            return null;
+        }
+
+        if (status == IS_OWNED) {
+            return {
+                row: targetRow, 
+                col: targetCol, 
+            };
+        }
+    }
+    return null;
 }
 
 function changeOwnerOppositeLower(row, col) {
@@ -91,7 +140,7 @@ function getPosOwnerOppositeLower(row, col) {
         return null;
     }
 
-    for (targetRow++; targetRow<=7; targetRow++) {
+    for (targetRow++; targetRow <= 7; targetRow++) {
         let status = getSquareStatus(targetRow, targetCol);
         
         if (status == NOT_SELECTED) {
@@ -102,6 +151,254 @@ function getPosOwnerOppositeLower(row, col) {
             return {
                 row: targetRow, 
                 col: targetCol, 
+            };
+        }
+    }
+    return null;
+}
+
+function changeOwnerOppositeLeft(row, col) {
+    let endPos = getPosOwnerOppositeLeft(row, col);
+    if (endPos == null) {
+        return;
+    }
+
+    let targetRow = row;
+    for (let targetCol = col - 1; endPos.col < targetCol; targetCol--) {
+        let targetSquare = getTargetSquare(targetRow, targetCol);
+        putPiece(targetSquare, getTurnString());
+    }
+}
+
+function getPosOwnerOppositeLeft(row, col) {
+    if (col == 0) {
+        return null;
+    }
+
+    let targetRow = row;
+    let targetCol = col - 1;
+
+    if (getSquareStatus(targetRow, targetCol) != IS_OTHER) {
+        return null;
+    }
+
+    for (targetCol--; 0 <= targetCol; targetCol--) {
+        let status = getSquareStatus(targetRow, targetCol);
+        
+        if (status == NOT_SELECTED) {
+            return null;
+        }
+
+        if (status == IS_OWNED) {
+            return {
+                row: targetRow,
+                col: targetCol,
+            };
+        }
+    }
+    return null;
+}
+
+function changeOwnerOppositeRight(row, col) {
+    let endPos = getPosOwnerOppositeRight(row, col);
+    if (endPos == null) {
+        return;
+    }
+
+    let targetRow = row;
+    for (let targetCol = col + 1; targetCol < endPos.col; targetCol++) {
+        let targetSquare = getTargetSquare(targetRow, targetCol);
+        putPiece(targetSquare, getTurnString());
+    }
+}
+
+function getPosOwnerOppositeRight(row, col) {
+    if (col == 7) {
+        return null;
+    }
+
+    let targetRow = row;
+    let targetCol = col + 1;
+
+    if (getSquareStatus(targetRow, targetCol) != IS_OTHER) {
+        return null;
+    }
+
+    for (targetCol++; targetCol <= 7; targetCol++) {
+        let status = getSquareStatus(targetRow, targetCol);
+
+        if (status == NOT_SELECTED) {
+            return null;
+        }
+
+        if (status == IS_OWNED) {
+            return {
+                row: targetRow,
+                col: targetCol,
+            };
+        }
+    }
+    return null;
+}
+
+function changeOwnerOppositeUpperLeft(row, col) {
+    let endPos = getPosOwnerOppositeUpperLeft(row, col);
+    if (endPos == null) {
+        return;
+    }
+
+    for (let targetRow = row - 1, targetCol = col - 1; endPos.row < targetRow && endPos.col < targetCol; targetRow--, targetCol--) {
+        let targetSquare = getTargetSquare(targetRow, targetCol);
+        putPiece(targetSquare, getTurnString());
+    }
+}
+
+function getPosOwnerOppositeUpperLeft(row, col) {
+    if (row == 0 || col == 0) {
+        return null;
+    }
+
+    let targetRow = row - 1;
+    let targetCol = col - 1;
+
+    if (getSquareStatus(targetRow, targetCol) != IS_OTHER) {
+        return null;
+    }
+
+    for (targetRow--, targetCol--; targetRow >= 0 && targetCol >= 0; targetRow--, targetCol--) {
+        let status = getSquareStatus(targetRow, targetCol);
+
+        if (status == NOT_SELECTED) {
+            return null;
+        }
+
+        if (status == IS_OWNED) {
+            return {
+                row: targetRow,
+                col: targetCol,
+            };
+        }
+    }
+    return null;
+}
+
+function changeOwnerOppositeUpperRight(row, col) {
+    let endPos = getPosOwnerOppositeUpperRight(row, col);
+    if (endPos == null) {
+        return;
+    }
+
+    for (let targetRow = row - 1, targetCol = col + 1; endPos.row < targetRow && targetCol < endPos.col; targetRow--, targetCol++) {
+        let targetSquare = getTargetSquare(targetRow, targetCol);
+        putPiece(targetSquare, getTurnString());
+    }
+}
+
+function getPosOwnerOppositeUpperRight(row, col) {
+    if (row == 0 || col == 7) {
+        return null;
+    }
+
+    let targetRow = row - 1;
+    let targetCol = col + 1;
+
+    if (getSquareStatus(targetRow, targetCol) != IS_OTHER) {
+        return null;
+    }
+
+    for (targetRow--, targetCol++; targetRow >= 0 && targetCol <= 7; targetRow--, targetCol++) {
+        let status = getSquareStatus(targetRow, targetCol);
+
+        if (status == NOT_SELECTED) {
+            return null;
+        }
+
+        if (status == IS_OWNED) {
+            return {
+                row: targetRow,
+                col: targetCol,
+            };
+        }
+    }
+    return null;
+}
+
+function changeOwnerOppositeLowerLeft(row, col) {
+    let endPos = getPosOwnerOppositeLowerLeft(row, col);
+    if (endPos == null) {
+        return;
+    }
+
+    for (let targetRow = row + 1, targetCol = col - 1; targetRow < endPos.row && endPos.col < targetCol; targetRow++, targetCol--) {
+        let targetSquare = getTargetSquare(targetRow, targetCol);
+        putPiece(targetSquare, getTurnString());
+    }
+}
+
+function getPosOwnerOppositeLowerLeft(row, col) {
+    if (row == 7 || col == 0) {
+        return null;
+    }
+
+    let targetRow = row + 1;
+    let targetCol = col - 1;
+
+    if (getSquareStatus(targetRow, targetCol) != IS_OTHER) {
+        return null;
+    }
+
+    for (targetRow++, targetCol--; targetRow <= 7 && targetCol >= 0; targetRow++, targetCol--) {
+        let status = getSquareStatus(targetRow, targetCol);
+
+        if (status == NOT_SELECTED) {
+            return null;
+        }
+
+        if (status == IS_OWNED) {
+            return {
+                row: targetRow,
+                col: targetCol,
+            };
+        }
+    }
+    return null;
+}
+
+function changeOwnerOppositeLowerRight(row, col) {
+    let endPos = getPosOwnerOppositeLowerRight(row, col);
+    if (endPos == null) {
+        return;
+    }
+
+    for (let targetRow = row + 1, targetCol = col + 1; targetRow < endPos.row && targetCol < endPos.col; targetRow++, targetCol++) {
+        let targetSquare = getTargetSquare(targetRow, targetCol);
+        putPiece(targetSquare, getTurnString());
+    }
+}
+
+function getPosOwnerOppositeLowerRight(row, col) {
+    if (row == 7 || col == 7) {
+        return null;
+    }
+
+    let targetRow = row + 1;
+    let targetCol = col + 1;
+
+    if (getSquareStatus(targetRow, targetCol) != IS_OTHER) {
+        return null;
+    }
+
+    for (targetRow++, targetCol++; targetRow <= 7 && targetCol <= 7; targetRow++, targetCol++) {
+        let status = getSquareStatus(targetRow, targetCol);
+
+        if (status == NOT_SELECTED) {
+            return null;
+        }
+
+        if (status == IS_OWNED) {
+            return {
+                row: targetRow,
+                col: targetCol,
             };
         }
     }
