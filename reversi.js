@@ -1,6 +1,12 @@
-IS_OWNED = "01";
-IS_OTHER = "02";
-NOT_SELECTED = "09";
+SQUARE_STATUS_IS_OWNED = "01";
+SQUARE_STATUS_IS_OTHER = "02";
+SQUARE_STATUS_NOT_SELECTED = "09";
+
+toastr.options = {
+    tapToDismiss: false, 
+    timeOut: 0,
+    extendedTimeOut: 0,  
+};
 
 let isOddTurn = true;
 
@@ -17,21 +23,51 @@ function clickSquareEvent() {
         return;
     }
 
+    toastr.remove();
+
     changeOwner(square);
+
+    if (isGameEnd()) {
+        toastEndMessage("ゲームが終了しました.");
+        return;
+    }
+
+    if (isPass()) {
+        toastr.remove();
+        toastr.error(getTurnString() + "には置けるマスがありません.");
+    
+        changeTurn();
+
+        if (isPass()) {
+            toastr.error(getTurnString() + "には置けるマスがありません.");
+            toastEndMessage("置けるマスがなくなりました");
+        } else {
+            setTimeout(function () {
+                toastr.info(getTurnString() + "の番です.");
+            }, 1000);
+        }
+        return;
+    }
+
+    toastr.info(getTurnString() + "の番です.");
 }
 
 function initializeEvent() {
+    toastr.remove();
+
     $(".square")
-        .removeClass("selcted")
+        .removeClass("selected")
         .text("")
         .attr("data-owner", "");
 
     isOddTurn = true;
 
-    changeOwner(getTargetSquare(3,3));
     changeOwner(getTargetSquare(3,4));
-    changeOwner(getTargetSquare(4,4));
+    changeOwner(getTargetSquare(3,3));
     changeOwner(getTargetSquare(4,3));
+    changeOwner(getTargetSquare(4,4));
+
+    toastr.info(getTurnString() + "の番です.");
 }
 
 function changeOwner(square) {
@@ -76,28 +112,29 @@ function canSelect(square) {
 
     let row = square.data("row");
     let col = square.data("col");
-    if (getPosOwnerOppositeUpper(row, col) != null) {
+
+    if (getPosOppositeUpper(row, col) != null) {
         return true;
     }
-    if (getPosOwnerOppositeLower(row, col) != null) {
+    if (getPosOppositeLower(row, col) != null) {
         return true;
     }
-    if (getPosOwnerOppositeLeft(row, col) != null) {
+    if (getPosOppositeLeft(row, col) != null) {
         return true;
     }
-    if (getPosOwnerOppositeRight(row, col) != null) {
+    if (getPosOppositeRight(row, col) != null) {
         return true;
     }
-    if (getPosOwnerOppositeUpperLeft(row, col) != null) {
+    if (getPosOppositeUpperLeft(row, col) != null) {
         return true;
     }
-    if (getPosOwnerOppositeUpperRight(row, col) != null) {
+    if (getPosOppositeUpperRight(row, col) != null) {
         return true;
     }
-    if (getPosOwnerOppositeLowerLeft(row, col) != null) {
+    if (getPosOppositeLowerLeft(row, col) != null) {
         return true;
     }
-    if (getPosOwnerOppositeLowerRight(row, col) != null) {
+    if (getPosOppositeLowerRight(row, col) != null) {
         return true;
     }
 
@@ -119,7 +156,7 @@ function changeOwnerOpposite(square) {
 }
 
 function changeOwnerOppositeUpper(row, col) {
-    let endPos = getPosOwnerOppositeUpper(row, col);
+    let endPos = getPosOppositeUpper(row, col);
     if (endPos == null) {
         return;
     }
@@ -131,7 +168,7 @@ function changeOwnerOppositeUpper(row, col) {
     }
 }
 
-function getPosOwnerOppositeUpper(row, col) {
+function getPosOppositeUpper(row, col) {
     if (row == 0) {
         return null;
     }
@@ -139,18 +176,18 @@ function getPosOwnerOppositeUpper(row, col) {
     let targetRow = row - 1;
     let targetCol = col;
 
-    if (getSquareStatus(targetRow, targetCol) != IS_OTHER) {
+    if (getSquareStatus(targetRow, targetCol) != SQUARE_STATUS_IS_OTHER) {
         return null;
     }
 
     for (targetRow--; 0 <= targetRow; targetRow--) {
         let status = getSquareStatus(targetRow, targetCol);
         
-        if (status == NOT_SELECTED) {
+        if (status == SQUARE_STATUS_NOT_SELECTED) {
             return null;
         }
 
-        if (status == IS_OWNED) {
+        if (status == SQUARE_STATUS_IS_OWNED) {
             return {
                 row: targetRow, 
                 col: targetCol, 
@@ -161,7 +198,7 @@ function getPosOwnerOppositeUpper(row, col) {
 }
 
 function changeOwnerOppositeLower(row, col) {
-    let endPos = getPosOwnerOppositeLower(row, col);
+    let endPos = getPosOppositeLower(row, col);
     if (endPos == null) {
         return;
     }
@@ -173,7 +210,7 @@ function changeOwnerOppositeLower(row, col) {
     }
 }
 
-function getPosOwnerOppositeLower(row, col) {
+function getPosOppositeLower(row, col) {
     if (row == 7) {
         return null;
     }
@@ -181,18 +218,18 @@ function getPosOwnerOppositeLower(row, col) {
     let targetRow = row + 1;
     let targetCol = col;
 
-    if (getSquareStatus(targetRow, targetCol) != IS_OTHER) {
+    if (getSquareStatus(targetRow, targetCol) != SQUARE_STATUS_IS_OTHER) {
         return null;
     }
 
     for (targetRow++; targetRow <= 7; targetRow++) {
         let status = getSquareStatus(targetRow, targetCol);
         
-        if (status == NOT_SELECTED) {
+        if (status == SQUARE_STATUS_NOT_SELECTED) {
             return null;
         }
 
-        if (status == IS_OWNED) {
+        if (status == SQUARE_STATUS_IS_OWNED) {
             return {
                 row: targetRow, 
                 col: targetCol, 
@@ -203,7 +240,7 @@ function getPosOwnerOppositeLower(row, col) {
 }
 
 function changeOwnerOppositeLeft(row, col) {
-    let endPos = getPosOwnerOppositeLeft(row, col);
+    let endPos = getPosOppositeLeft(row, col);
     if (endPos == null) {
         return;
     }
@@ -215,7 +252,7 @@ function changeOwnerOppositeLeft(row, col) {
     }
 }
 
-function getPosOwnerOppositeLeft(row, col) {
+function getPosOppositeLeft(row, col) {
     if (col == 0) {
         return null;
     }
@@ -223,18 +260,18 @@ function getPosOwnerOppositeLeft(row, col) {
     let targetRow = row;
     let targetCol = col - 1;
 
-    if (getSquareStatus(targetRow, targetCol) != IS_OTHER) {
+    if (getSquareStatus(targetRow, targetCol) != SQUARE_STATUS_IS_OTHER) {
         return null;
     }
 
     for (targetCol--; 0 <= targetCol; targetCol--) {
         let status = getSquareStatus(targetRow, targetCol);
         
-        if (status == NOT_SELECTED) {
+        if (status == SQUARE_STATUS_NOT_SELECTED) {
             return null;
         }
 
-        if (status == IS_OWNED) {
+        if (status == SQUARE_STATUS_IS_OWNED) {
             return {
                 row: targetRow,
                 col: targetCol,
@@ -245,7 +282,7 @@ function getPosOwnerOppositeLeft(row, col) {
 }
 
 function changeOwnerOppositeRight(row, col) {
-    let endPos = getPosOwnerOppositeRight(row, col);
+    let endPos = getPosOppositeRight(row, col);
     if (endPos == null) {
         return;
     }
@@ -257,7 +294,7 @@ function changeOwnerOppositeRight(row, col) {
     }
 }
 
-function getPosOwnerOppositeRight(row, col) {
+function getPosOppositeRight(row, col) {
     if (col == 7) {
         return null;
     }
@@ -265,18 +302,18 @@ function getPosOwnerOppositeRight(row, col) {
     let targetRow = row;
     let targetCol = col + 1;
 
-    if (getSquareStatus(targetRow, targetCol) != IS_OTHER) {
+    if (getSquareStatus(targetRow, targetCol) != SQUARE_STATUS_IS_OTHER) {
         return null;
     }
 
     for (targetCol++; targetCol <= 7; targetCol++) {
         let status = getSquareStatus(targetRow, targetCol);
 
-        if (status == NOT_SELECTED) {
+        if (status == SQUARE_STATUS_NOT_SELECTED) {
             return null;
         }
 
-        if (status == IS_OWNED) {
+        if (status == SQUARE_STATUS_IS_OWNED) {
             return {
                 row: targetRow,
                 col: targetCol,
@@ -287,7 +324,7 @@ function getPosOwnerOppositeRight(row, col) {
 }
 
 function changeOwnerOppositeUpperLeft(row, col) {
-    let endPos = getPosOwnerOppositeUpperLeft(row, col);
+    let endPos = getPosOppositeUpperLeft(row, col);
     if (endPos == null) {
         return;
     }
@@ -298,7 +335,7 @@ function changeOwnerOppositeUpperLeft(row, col) {
     }
 }
 
-function getPosOwnerOppositeUpperLeft(row, col) {
+function getPosOppositeUpperLeft(row, col) {
     if (row == 0 || col == 0) {
         return null;
     }
@@ -306,18 +343,18 @@ function getPosOwnerOppositeUpperLeft(row, col) {
     let targetRow = row - 1;
     let targetCol = col - 1;
 
-    if (getSquareStatus(targetRow, targetCol) != IS_OTHER) {
+    if (getSquareStatus(targetRow, targetCol) != SQUARE_STATUS_IS_OTHER) {
         return null;
     }
 
     for (targetRow--, targetCol--; targetRow >= 0 && targetCol >= 0; targetRow--, targetCol--) {
         let status = getSquareStatus(targetRow, targetCol);
 
-        if (status == NOT_SELECTED) {
+        if (status == SQUARE_STATUS_NOT_SELECTED) {
             return null;
         }
 
-        if (status == IS_OWNED) {
+        if (status == SQUARE_STATUS_IS_OWNED) {
             return {
                 row: targetRow,
                 col: targetCol,
@@ -328,7 +365,7 @@ function getPosOwnerOppositeUpperLeft(row, col) {
 }
 
 function changeOwnerOppositeUpperRight(row, col) {
-    let endPos = getPosOwnerOppositeUpperRight(row, col);
+    let endPos = getPosOppositeUpperRight(row, col);
     if (endPos == null) {
         return;
     }
@@ -339,7 +376,7 @@ function changeOwnerOppositeUpperRight(row, col) {
     }
 }
 
-function getPosOwnerOppositeUpperRight(row, col) {
+function getPosOppositeUpperRight(row, col) {
     if (row == 0 || col == 7) {
         return null;
     }
@@ -347,18 +384,18 @@ function getPosOwnerOppositeUpperRight(row, col) {
     let targetRow = row - 1;
     let targetCol = col + 1;
 
-    if (getSquareStatus(targetRow, targetCol) != IS_OTHER) {
+    if (getSquareStatus(targetRow, targetCol) != SQUARE_STATUS_IS_OTHER) {
         return null;
     }
 
     for (targetRow--, targetCol++; targetRow >= 0 && targetCol <= 7; targetRow--, targetCol++) {
         let status = getSquareStatus(targetRow, targetCol);
 
-        if (status == NOT_SELECTED) {
+        if (status == SQUARE_STATUS_NOT_SELECTED) {
             return null;
         }
 
-        if (status == IS_OWNED) {
+        if (status == SQUARE_STATUS_IS_OWNED) {
             return {
                 row: targetRow,
                 col: targetCol,
@@ -369,7 +406,7 @@ function getPosOwnerOppositeUpperRight(row, col) {
 }
 
 function changeOwnerOppositeLowerLeft(row, col) {
-    let endPos = getPosOwnerOppositeLowerLeft(row, col);
+    let endPos = getPosOppositeLowerLeft(row, col);
     if (endPos == null) {
         return;
     }
@@ -380,7 +417,7 @@ function changeOwnerOppositeLowerLeft(row, col) {
     }
 }
 
-function getPosOwnerOppositeLowerLeft(row, col) {
+function getPosOppositeLowerLeft(row, col) {
     if (row == 7 || col == 0) {
         return null;
     }
@@ -388,18 +425,18 @@ function getPosOwnerOppositeLowerLeft(row, col) {
     let targetRow = row + 1;
     let targetCol = col - 1;
 
-    if (getSquareStatus(targetRow, targetCol) != IS_OTHER) {
+    if (getSquareStatus(targetRow, targetCol) != SQUARE_STATUS_IS_OTHER) {
         return null;
     }
 
     for (targetRow++, targetCol--; targetRow <= 7 && targetCol >= 0; targetRow++, targetCol--) {
         let status = getSquareStatus(targetRow, targetCol);
 
-        if (status == NOT_SELECTED) {
+        if (status == SQUARE_STATUS_NOT_SELECTED) {
             return null;
         }
 
-        if (status == IS_OWNED) {
+        if (status == SQUARE_STATUS_IS_OWNED) {
             return {
                 row: targetRow,
                 col: targetCol,
@@ -410,7 +447,7 @@ function getPosOwnerOppositeLowerLeft(row, col) {
 }
 
 function changeOwnerOppositeLowerRight(row, col) {
-    let endPos = getPosOwnerOppositeLowerRight(row, col);
+    let endPos = getPosOppositeLowerRight(row, col);
     if (endPos == null) {
         return;
     }
@@ -421,7 +458,7 @@ function changeOwnerOppositeLowerRight(row, col) {
     }
 }
 
-function getPosOwnerOppositeLowerRight(row, col) {
+function getPosOppositeLowerRight(row, col) {
     if (row == 7 || col == 7) {
         return null;
     }
@@ -429,18 +466,18 @@ function getPosOwnerOppositeLowerRight(row, col) {
     let targetRow = row + 1;
     let targetCol = col + 1;
 
-    if (getSquareStatus(targetRow, targetCol) != IS_OTHER) {
+    if (getSquareStatus(targetRow, targetCol) != SQUARE_STATUS_IS_OTHER) {
         return null;
     }
 
     for (targetRow++, targetCol++; targetRow <= 7 && targetCol <= 7; targetRow++, targetCol++) {
         let status = getSquareStatus(targetRow, targetCol);
 
-        if (status == NOT_SELECTED) {
+        if (status == SQUARE_STATUS_NOT_SELECTED) {
             return null;
         }
 
-        if (status == IS_OWNED) {
+        if (status == SQUARE_STATUS_IS_OWNED) {
             return {
                 row: targetRow,
                 col: targetCol,
@@ -454,12 +491,41 @@ function getSquareStatus(row, col) {
     let targetSquare = getTargetSquare(row, col);
 
     if (!targetSquare.hasClass("selected")) {
-        return NOT_SELECTED;
+        return SQUARE_STATUS_NOT_SELECTED;
     }
 
     if (getTurnString() == targetSquare.attr("data-owner")) {
-        return IS_OWNED
+        return SQUARE_STATUS_IS_OWNED
     }
 
-    return IS_OTHER
+    return SQUARE_STATUS_IS_OTHER
+}
+
+function isGameEnd() {
+    if ($(".square.selected").length == 64) {
+        return true;
+    }
+    return false;
+}
+
+function toastEndMessage(message) {
+    let countBlack = $("[data-owner=black]").length;
+    let countWhite = $("[data-owner=white]").length;
+
+    let judgeString = "black:" + countBlack + "<br/>" + "white:" + countWhite + "<br/>";
+    
+    if (countBlack == countWhite) {
+        toastr.success(message + "<br/>" + judgeString + "引き分けです.")
+    } else if (countBlack < countWhite) {
+        toastr.success(message + "<br/>" + judgeString + "Whiteの勝利です.")
+    } else {
+        toastr.success(message + "<br/>" + judgeString + "Blackの勝利です.")
+    }
+}
+
+function isPass() {
+    if ($(".square.can-select").length == 0) {
+        return true;
+    }
+    return false;
 }
